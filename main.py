@@ -65,8 +65,8 @@ async def list_rulesets(zone_id: str = Path(..., description="Zone ID da Cloudfl
         raise HTTPException(status_code=500, detail="Cloudflare token is not configured")
     
     headers = {
-        "Authorization": f"Baerer {CLOUDFLARE_API_TOKEN}",
-        "Content-type": "application/json"
+        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+        "Content-Type": "application/json"
     }
 
     url = f"{CLOUDFLARE_BASE_URL}/zones/{zone_id}/rulesets"
@@ -79,3 +79,43 @@ async def list_rulesets(zone_id: str = Path(..., description="Zone ID da Cloudfl
             status_code=response.status_code,
             detail=response.text
         )
+    return response.json()
+
+@app.get("cloudflare/rulesets/{zone_id}/{ruleset_id}")
+async def get_ruleset_details(
+    zone_id: str = Path(..., description="Zone ID da Cloudflare"),
+    ruleset_id: str = Path(..., description="Ruleset ID da Cloudflare")
+):
+    if not CLOUDFLARE_API_TOKEN:
+        raise HTTPException(status_code=500, detail="Cloudflare token is not configured")
+
+    headers = {
+        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    url = f"{CLOUDFLARE_BASE_URL}/zones/{zone_id}/rulesets/{ruleset_id}"
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
+
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=response.text
+            )
+        return response.json()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
