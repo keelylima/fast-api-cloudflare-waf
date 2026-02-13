@@ -1,6 +1,7 @@
 import os
 import httpx
 from fastapi import FastAPI, HTTPException, Path
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -107,6 +108,44 @@ async def get_ruleset_details(
         return response.json()
 
 
+class CreateRulesetRequest(BaseModel):
+    name: str
+    description: str
+
+
+@app.post("/cloudflare/rulesets/{zone_id}")
+async def create_ruleset(
+    zone_id: str = Path(..., description="Zone ID da Cloudflare"),
+    data: CreateRulesetRequest = ...
+):
+    if not CLOUDFLARE_API_TOKEN:
+        raise HTTPException(status_code=500, detail="Cloudflare token not configured")
+
+    headers = {
+        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    url = f"{CLOUDFLARE_BASE_URL}/zones/{zone_id}/rulesets"
+
+    payload = {
+        "name": data.name,
+        "description": data.description,
+        "kind": "zone",
+        "phase": "http_request_firewall_custom",
+        "rules": []
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=payload)
+
+    if response.status_code not in [200, 201]:
+        raise HTTPException(
+            status_code=response.status_code,
+            detail=response.text
+        )
+
+    return response.json()
 
 
 
