@@ -82,7 +82,8 @@ async def list_rulesets(zone_id: str = Path(..., description="Zone ID da Cloudfl
         )
     return response.json()
 
-@app.get("cloudflare/rulesets/{zone_id}/{ruleset_id}")
+
+@app.get("/cloudflare/rulesets/{zone_id}/{ruleset_id}")
 async def get_ruleset_details(
     zone_id: str = Path(..., description="Zone ID da Cloudflare"),
     ruleset_id: str = Path(..., description="Ruleset ID da Cloudflare")
@@ -147,8 +148,33 @@ async def create_ruleset(
 
     return response.json()
 
+@app.delete("/cloudflare/rulesets/{zone_id}/{ruleset_id}")
+async def delete_ruleset(
+    zone_id: str = Path(..., description="Zone ID Cloudflare"),
+    ruleset_id: str = Path(..., description="Ruleset ID Cloudflare")
+):
+    if not CLOUDFLARE_API_TOKEN:
+        raise HTTPException(status_code=500, detail="Cloudflae token configured")
 
+    headers = {
+        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
 
+    url = f"{CLOUDFLARE_BASE_URL}/zones/{zone_id}/rulesets/{ruleset_id}"
+
+    async with httpx.AsyncClient() as client:
+        response = await client.delete(url, headers=headers)
+
+        if response.status_code not in [200, 204]:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=response.text
+            )
+        return {
+            "message": "Ruleset deleted successfully",
+            "ruleset_id": ruleset_id
+        }
 
 
 
