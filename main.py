@@ -1,6 +1,7 @@
 import os
 import httpx
 from fastapi import FastAPI, HTTPException, Path
+from typing import Literal
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -175,6 +176,84 @@ async def delete_ruleset(
             "message": "Ruleset deleted successfully",
             "ruleset_id": ruleset_id
         }
+
+
+class CreateRuleRequest(BaseModel):
+    expression: str
+    description: str
+    action: Literal["block", "skip"] = "block"
+
+@app.patch("/cloudflare/rulesets/{zone_id}/{ruleset_id}/rules")
+async def patch_add_rule_to_ruleset(
+    zone_id: str = Path(..., description="Zone ID da Cloudflare"),
+    ruleset_id: str = Path(..., description="Ruleset ID da Cloudflare"),
+    rule: CreateRuleRequest = ...
+):
+    if not CLOUDFLARE_API_TOKEN:
+        raise HTTPException(
+            status_code=500,
+            detail="Cloudflare token not configured"
+        )
+
+    headers = {
+        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    base_url = f"{CLOUDFLARE_BASE_URL}/zones/{zone_id}/rulesets/{ruleset_id}"
+
+    async with httpx.AsyncClient() as client:
+
+        # Buscar ruleset atual
+        get_response = await client.get(base_url, headers=headers)
+
+        if get_response.status_code != 200:
+            raise HTTPException(
+                status_code=get_response.status_code,
+                detail=get_response.text
+            )
+
+        ruleset_data = get_response.json()["result"]
+
+        existing_rules = ruleset_data.get("rules", [])
+
+        # Criar nova regra
+        new_rule = {
+            "expression": rule.expression,
+            "description": rule.description,
+            "action": rule.action,
+            "enabled": True
+        }
+
+        # (Opcional) evitar duplicação
+        if any(r["expression"] == rule.expression for r in existing_rules):
+            raise HTTPException(
+                status_code=400,
+                detail="Rule with this expression already exists"
+            )
+
+        existing_rules.append(new_rule)
+
+        # Atualizar ruleset inteiro (Cloudflare exige PUT)
+        put_response = await client.put(
+            base_url,
+            headers=headers,
+            json={
+                "rules": existing_rules
+            }
+        )
+
+    if put_response.status_code != 200:
+        raise HTTPException(
+            status_code=put_response.status_code,
+            detail=put_response.text
+        )
+
+    return {
+        "message": "Rule added successfully",
+        "ruleset_id": ruleset_id
+    }
+
 
 
 
