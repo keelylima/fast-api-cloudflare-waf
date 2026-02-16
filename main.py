@@ -243,6 +243,9 @@ async def patch_add_rule_to_ruleset(
             "enabled": True
         }
 
+        if rule.action == "skip":
+            new_rule["action_parameters"] = rule.action_parameters.model_dump()
+
         # (Opcional) evitar duplicação
         if any(r["expression"] == rule.expression for r in existing_rules):
             raise HTTPException(
