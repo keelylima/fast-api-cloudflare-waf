@@ -1,8 +1,8 @@
 import os
 import httpx
 from fastapi import FastAPI, HTTPException, Path
-from typing import Literal
-from pydantic import BaseModel
+from typing import Literal, Optional, List
+from pydantic import BaseModel, model_validator
 
 app = FastAPI()
 
@@ -178,10 +178,28 @@ async def delete_ruleset(
         }
 
 
+class SkipParameters(BaseModel):
+    phases: Optional[List[Literal[
+        "http_request_firewall_custom",
+        "http_request_firewall_managed"
+    ]]] = None
+
+
 class CreateRuleRequest(BaseModel):
     expression: str
     description: str
     action: Literal["block", "skip"] = "block"
+    action_parameters: Optional[SkipParameters] = None
+
+    @model_validator(mode="after")
+    def validate_action_parameters(self):
+        if self.action == "skip" and not self.action_parameters:
+            raise ValueError("action_parameters is required when action is 'skip'")
+
+        if self.action == "block" and self.action_parameters is not None:
+            raise ValueError("action_parameters must not be provided when action is 'block'")
+
+        return self
 
 @app.patch("/cloudflare/rulesets/{zone_id}/{ruleset_id}/rules")
 async def patch_add_rule_to_ruleset(
