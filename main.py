@@ -184,6 +184,8 @@ class SkipParameters(BaseModel):
         "http_request_firewall_managed"
     ]]] = None
 
+    ruleset: Optional[Literal["current"]] = None
+
 
 class CreateRuleRequest(BaseModel):
     expression: str
@@ -192,14 +194,19 @@ class CreateRuleRequest(BaseModel):
     action_parameters: Optional[SkipParameters] = None
 
     @model_validator(mode="after")
-    def validate_action_parameters(self):
-        if self.action == "skip" and not self.action_parameters:
-            raise ValueError("action_parameters is required when action is 'skip'")
+    def validate_skip(cls, values):
+        if values.action == "skip":
+            if not values.action_parameters:
+                raise ValueError("action_parameters is required when action is 'skip'")
 
-        if self.action == "block" and self.action_parameters is not None:
-            raise ValueError("action_parameters must not be provided when action is 'block'")
+            if not (values.action_parameters.phases or values.action_parameters.ruleset):
+                raise ValueError("Skip must define either 'phases' or 'ruleset'")
 
-        return self
+        else:
+            if values.action_parameters is not None:
+                raise ValueError("action_parameters must not be provided when action is 'block'")
+
+        return values
 
 @app.patch("/cloudflare/rulesets/{zone_id}/{ruleset_id}/rules")
 async def patch_add_rule_to_ruleset(
