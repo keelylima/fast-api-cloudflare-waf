@@ -283,6 +283,69 @@ async def patch_add_rule_to_ruleset(
     }
 
 
+@app.delete("/cloudflare/rulesets/{zone_id}/{ruleset_id}/rules/{rule_id}")
+async def delete_rule_from_ruleset(
+    zone_id: str = Path(..., description="Zone ID da Cloudflare"),
+    ruleset_id: str = Path(..., description="Ruleset ID da Cloudflare"),
+    rule_id: str = Path(..., description="Rule ID da Cloudflare")
+):
+    if not CLOUDFLARE_API_TOKEN:
+        raise HTTPException(
+            status_code=500,
+            detail="Cloudflare token not configured"
+        )
+
+    headers = {
+        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    base_url = f"{CLOUDFLARE_BASE_URL}/zones/{zone_id}/rulesets/{ruleset_id}"
+
+    async with httpx.AsyncClient() as client:
+
+        get_response = await client.get(base_url, headers=headers)
+
+        if get_response.status_code != 200:
+            raise HTTPException(
+                status_code=get_response.status_code,
+                detail=get_response.text
+            )
+
+        ruleset_data = get_response.json()["result"]
+        existing_rules = ruleset_data["rules"]
+
+        updated_rules = [
+            rule for rule in existing_rules
+            if rule["id"] != rule_id
+        ]
+
+        if len(updated_rules) == len(existing_rules):
+            raise HTTPException(
+                status_code=404,
+                detail="Rule not found in this ruleset"
+            )
+            
+        put_response = await client.put(
+            base_url,
+            headers=headers,
+            json={"rules": updated_rules}
+        )
+
+    if put_response.status_code != 200:
+        raise HTTPException(
+            status_code=put_response.status_code,
+            detail=put_response.text
+        )
+
+    return {
+        "message": "Rule removed successfully",
+        "ruleset_id": ruleset_id,
+        "rule_id": rule_id
+    }
+
+
+
 
 
 
