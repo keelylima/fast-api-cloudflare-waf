@@ -10,7 +10,6 @@ router = APIRouter(
     tags=["Cloudflare"]
 )
 
-
 @router.get("/zones")
 async def list_zones():
     return await service.list_zones()

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 class CreateRulesetRequest(BaseModel):
     name: str

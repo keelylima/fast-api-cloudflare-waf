@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routers.cloudflare import router as cloudflare_router
+from app.routes.cloudflare import router as cloudflare_router
 
 app = FastAPI()
 
