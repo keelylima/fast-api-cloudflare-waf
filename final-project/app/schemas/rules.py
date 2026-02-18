@@ -1,4 +1,4 @@
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, model_validator, Field
 from typing import Literal, Optional, List
 
 class CreateRulesetRequest(BaseModel):
@@ -17,7 +17,9 @@ class SkipParameters(BaseModel):
 class CreateRuleRequest(BaseModel):
     expression: str
     description: str
-    action: Literal["block", "skip"] = "block"
+    action: Literal["block", "skip"] = Field(
+    description="If action is 'skip', action_parameters is required. For 'block', it must not be provided."
+)
     action_parameters: Optional[SkipParameters] = None
 
     @model_validator(mode="after")
