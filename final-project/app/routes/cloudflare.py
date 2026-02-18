@@ -57,9 +57,9 @@ async def delete_ruleset(
 async def add_rule_to_ruleset(
     zone_id: str = Path(..., description="Zone ID da Cloudflare"),
     ruleset_id: str = Path(..., description="Ruleset ID da Cloudflare"),
-    rule: CreateRuleRequest = ...
+    data: CreateRuleRequest = ...
 ):
-    return await service.add_rule_to_ruleset(zone_id, ruleset_id, rule)
+    return await service.add_rule_to_ruleset(zone_id, ruleset_id, data)
 
 
 @router.delete("/rulesets/{zone_id}/{ruleset_id}/rules/{rule_id}")

@@ -1,4 +1,5 @@
 from pydantic import BaseModel, model_validator
+from typing import Literal, Optional, List
 
 class CreateRulesetRequest(BaseModel):
     name: str
@@ -33,4 +34,6 @@ class CreateRuleRequest(BaseModel):
                 raise ValueError("action_parameters must not be provided when action is 'block'")
 
         return values
+    
+CreateRuleRequest.model_rebuild()
 
