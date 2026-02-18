@@ -314,6 +314,8 @@ async def delete_rule_from_ruleset(
 
         ruleset_data = get_response.json()["result"]
         existing_rules = ruleset_data["rules"]
+        # Testar amanhã 
+        # print('existing_rules', existing_rules)
 
         updated_rules = [
             rule for rule in existing_rules
@@ -325,7 +327,7 @@ async def delete_rule_from_ruleset(
                 status_code=404,
                 detail="Rule not found in this ruleset"
             )
-            
+
         put_response = await client.put(
             base_url,
             headers=headers,
