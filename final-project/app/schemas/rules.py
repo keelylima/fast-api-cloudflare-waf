@@ -37,5 +37,22 @@ class CreateRuleRequest(BaseModel):
 
         return values
     
-CreateRuleRequest.model_rebuild()
+class RulePosition(BaseModel):
+    before: Optional[str] = None
+    after: Optional[str] = None
+    index: Optional[int] = None
+
+    @model_validator(mode="after")
+    def validate_position(cls, values):
+        provided = [
+            values.before is not None,
+            values.after is not None,
+            values.index is not None,
+        ]
+
+        if sum(provided) != 1:
+            raise ValueError(
+                "You must provide exactly one of: before, after, or index."
+            )
+        return values
 

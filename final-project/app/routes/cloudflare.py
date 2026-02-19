@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Path
 from app.schemas.rules import (
     CreateRulesetRequest,
-    CreateRuleRequest
+    CreateRuleRequest,
+    RulePosition
 )
 from app.services import cloudflare_service as service
 
@@ -72,4 +73,20 @@ async def delete_rule_from_ruleset(
         zone_id,
         ruleset_id,
         rule_id
+    )
+
+@router.patch(
+    "/rulesets/{zone_id}/{ruleset_id}/rules/{rule_id}/reorder"
+)
+async def reorder_rule(
+    zone_id: str,
+    ruleset_id: str,
+    rule_id: str,
+    position: RulePosition
+):
+    return await service.reorder_rule(
+        zone_id=zone_id,
+        ruleset_id=ruleset_id,
+        rule_id=rule_id,
+        position=position
     )

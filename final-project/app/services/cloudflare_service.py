@@ -235,3 +235,27 @@ async def delete_rule_from_ruleset(zone_id: str, ruleset_id: str, rule_id: str):
         "ruleset_id": ruleset_id,
         "rule_id": rule_id
     }
+
+
+async def reorder_rule(zone_id: str, ruleset_id: str, rule_id: str, position: RulePosition):
+    headers = get_headers()
+
+    base_url = f"{settings.CLOUDFLARE_BASE_URL}/zones/{zone_id}/rulesets/{ruleset_id}/rules/{rule_id}"
+
+    payload = {
+        "position": position.model_dump(exclude_none=True)
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.patch(url, headers=headers, json=payload)
+
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=response.status_code,
+            detail=response.text
+        )
+
+    return {
+        "message": "Rule reordered successfully",
+        "rule_id": rule_id
+    }
