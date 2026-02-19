@@ -128,13 +128,14 @@ Default behavior: `zone` (custom rules only).
 ## 🧠 Architectural Design
 
 The project follows a layered structure:
-
+```
 app/
 ├── routes/ # API layer
 ├── services/ # Business logic & Cloudflare integration
 ├── schemas/ # Request/response validation models
 ├── core/ # Configuration
 └── main.py # Application entrypoint
+```
 
 
 Separation of concerns ensures:
