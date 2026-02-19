@@ -315,8 +315,9 @@ async def export_rules_by_zone(zone_id: str, kind: Literal["zone", "managed", "a
 
             rules: list[dict] = details_response.json()["result"].get("rules", [])
 
-            for rule in rules:
+            for index, rule in enumerate(rules, start=1):
                 exported_rule: ExportedRule = ExportedRule(
+                    index=index,
                     zone_name=zone_name,
                     zone_id=zone_id,
                     ruleset_id=ruleset_id,

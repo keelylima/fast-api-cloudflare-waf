@@ -57,6 +57,7 @@ class RulePosition(BaseModel):
         return values
 
 class ExportedRule(BaseModel):
+    index: int
     zone_name: str
     zone_id: str
     ruleset_id: str
