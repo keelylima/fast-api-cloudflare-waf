@@ -1,7 +1,7 @@
 import httpx
 from fastapi import HTTPException
 from app.core.config import settings
-from app.schemas.rules import CreateRulesetRequest, CreateRuleRequest
+from app.schemas.rules import CreateRulesetRequest, CreateRuleRequest, ExportedRule
 
 
 def get_headers():
@@ -259,3 +259,74 @@ async def reorder_rule(zone_id: str, ruleset_id: str, rule_id: str, position: Ru
         "message": "Rule reordered successfully",
         "rule_id": rule_id
     }
+
+async def export_rules_by_zone(zone_id: str, kind: Literal["current", "managed", "all"]):
+
+    headers = get_headers()
+
+    async with httpx.AsyncClient() as client:
+
+        # Buscar dados da zona (para pegar o nome)
+        zone_response: httpx.Response = await client.get(
+            f"{settings.CLOUDFLARE_BASE_URL}/zones/{zone_id}",
+            headers=headers
+        )
+
+        if zone_response.status_code != 200:
+            raise HTTPException(
+                status_code=zone_response.status_code,
+                detail=zone_response.text
+            )
+
+        zone_data: dict = zone_response.json()["result"]
+        zone_name: str = zone_data["name"]
+
+        # Buscar rulesets da zona
+        rulesets_response: httpx.Response = await client.get(
+            f"{settings.CLOUDFLARE_BASE_URL}/zones/{zone_id}/rulesets",
+            headers=headers
+        )
+
+        if rulesets_response.status_code != 200:
+            raise HTTPException(
+                status_code=rulesets_response.status_code,
+                detail=rulesets_response.text
+            )
+
+        rulesets_data: list[dict] = rulesets_response.json()["result"]
+
+        all_rules: list[ExportedRule] = []
+
+        #Para cada ruleset
+        for ruleset in rulesets_data:
+            ruleset_id: str = ruleset["id"]
+            ruleset_kind: str = ruleset.get("kind", "")
+
+            if kind != "all" and ruleset_kind != kind:
+                continue
+
+            details_response: httpx.Response = await client.get(
+                f"{settings.CLOUDFLARE_BASE_URL}/zones/{zone_id}/rulesets/{ruleset_id}",
+                headers=headers
+            )
+
+            if details_response.status_code != 200:
+                continue  #não quebra tudo
+
+            rules: list[dict] = details_response.json()["result"].get("rules", [])
+
+            for rule in rules:
+                exported_rule: ExportedRule = ExportedRule(
+                    zone_name=zone_name,
+                    zone_id=zone_id,
+                    ruleset_id=ruleset_id,
+                    rule_id=rule.get("id"),
+                    description=rule.get("description"),
+                    action=rule.get("action"),
+                    expression=rule.get("expression"),
+                    enabled=rule.get("enabled", False)
+                )
+
+                all_rules.append(exported_rule)
+
+    return all_rules

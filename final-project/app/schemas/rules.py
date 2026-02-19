@@ -56,3 +56,13 @@ class RulePosition(BaseModel):
             )
         return values
 
+class ExportedRule(BaseModel):
+    zone_name: str
+    zone_id: str
+    ruleset_id: str
+    rule_id: str
+    description: str | None
+    action: str
+    expression: str | None
+    enabled: bool
+

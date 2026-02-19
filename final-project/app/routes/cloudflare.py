@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Path
+from fastapi import APIRouter, Path, Query
+from typing import Literal
 from app.schemas.rules import (
     CreateRulesetRequest,
     CreateRuleRequest,
-    RulePosition
+    RulePosition,
+    ExportedRule
 )
 from app.services import cloudflare_service as service
 
@@ -89,4 +91,18 @@ async def reorder_rule(
         ruleset_id=ruleset_id,
         rule_id=rule_id,
         position=position
+    )
+
+@router.get(
+    "/rules/export/{zone_id}",
+    response_model=list[ExportedRule]
+)
+async def export_rules(
+    zone_id: str,
+    kind: Literal["current", "managed", "all"] = Query("current")
+) -> list[ExportedRule]:
+
+    return await service.export_rules_by_zone(
+        zone_id=zone_id,
+        kind=kind
     )
