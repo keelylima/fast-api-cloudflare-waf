@@ -260,7 +260,7 @@ async def reorder_rule(zone_id: str, ruleset_id: str, rule_id: str, position: Ru
         "rule_id": rule_id
     }
 
-async def export_rules_by_zone(zone_id: str, kind: Literal["current", "managed", "all"]):
+async def export_rules_by_zone(zone_id: str, kind: Literal["zone", "managed", "all"]):
 
     headers = get_headers()
 

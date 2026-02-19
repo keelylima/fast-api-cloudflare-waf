@@ -99,7 +99,7 @@ async def reorder_rule(
 )
 async def export_rules(
     zone_id: str,
-    kind: Literal["current", "managed", "all"] = Query("current")
+    kind: Literal["zone", "managed", "all"] = Query("zone")
 ) -> list[ExportedRule]:
 
     return await service.export_rules_by_zone(
