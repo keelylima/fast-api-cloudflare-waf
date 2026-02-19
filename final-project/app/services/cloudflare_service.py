@@ -247,7 +247,7 @@ async def reorder_rule(zone_id: str, ruleset_id: str, rule_id: str, position: Ru
     }
 
     async with httpx.AsyncClient() as client:
-        response = await client.patch(url, headers=headers, json=payload)
+        response = await client.patch(base_url, headers=headers, json=payload)
 
     if response.status_code != 200:
         raise HTTPException(
