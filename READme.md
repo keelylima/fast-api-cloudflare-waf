@@ -105,15 +105,15 @@ Only one position field allowed per request.
 GET /cloudflare/rules/export/{zone_id}?kind=zone
 ```
 Returns a structured inventory of rules including:
-- zone_name
-- zone_id
-- ruleset_id
-- rule_id
-- description
-- action
-- expression
-- enabled
-- index (execution order inside ruleset)
+- `zone_name`
+- `zone_id`
+- `ruleset_id`
+- `rule_id`
+- `description`
+- `action`
+- `expression`
+- `enabled`
+- `index` (execution order inside ruleset)
 
 Query parameter:
 
@@ -122,6 +122,104 @@ Query parameter:
 | kind  | zone / managed / all | Filters ruleset type |
 
 Default behavior: `zone` (custom rules only).
+
+---
+
+
+## 🆕 IP Lists (Account-Level Governance)
+
+### 📌 10. List Account IP Lists
+```
+GET /cloudflare/ip-lists/{account_id}/ip-lists
+```
+
+Returns all IP Lists for a given Cloudflare account.
+Includes metadata such as:
+- `id`
+- `name`
+- `description`
+- `kind`
+- `num_items`
+- `num_referencing_filters`
+- `created_on`
+- `modified_on`
+
+---
+
+### 📌 11. Create IP List
+```
+POST /cloudflare/ip-lists/{account_id}/ip-lists
+```
+Creates a new IP List of type ip.
+
+Request Body
+```
+{
+  "name": "list_name",
+  "description": "optional description"
+}
+```
+
+Notes:
+> Cloudflare Free plan allows only one IP list per account.
+Attempting to create additional lists may return an error.
+The list is created at the account level, not zone level.
+
+---
+
+### 📌 12. Delete IP List
+```
+DELETE /cloudflare/ip-lists/{account_id}/ip-lists/{list_id}
+```
+Deletes an existing IP List.
+
+Notes
+> Deletion will fail if the list is referenced by active rules.
+Ensure the list is not in use before deletion.
+
+---
+
+### 📌 13. List IP List Items
+```
+GET /cloudflare/ip-lists/{account_id}/ip-lists/{list_id}/items
+```
+Returns all IP entries within a specific IP List.
+Each item includes:
+- `id`
+- `ip`
+- `comment`
+- `created_on`
+
+---
+
+### 📌 14. Add IP(s) to IP List
+```
+POST /cloudflare/ip-lists/{account_id}/ip-lists/{list_id}/items
+```
+Adds one or multiple IP addresses to a list.
+Request Body (Bulk Supported)
+```
+[
+  {
+    "ip": "1.1.1.1",
+    "comment": "cloudflare dns"
+  },
+  {
+    "ip": "8.8.8.8",
+    "comment": "google dns"
+  }
+]
+```
+
+Response
+Cloudflare processes additions asynchronously and returns:
+```
+{
+  "operation_id": "..."
+}
+```
+
+The `operation_id` can be used to track processing status via the Cloudflare API.
 
 ---
 
@@ -158,6 +256,7 @@ Recommended permissions:
 
 - Zone: Read
 - Account WAF: Write
+- Account Filter Lists: Write
 
 ---
 
@@ -167,9 +266,6 @@ Recommended permissions:
 - Governance reports (block vs skip distribution)
 - Diff between environments (QA vs PROD)
 - Pagination support for large zones
-- Performance optimization with parallel requests
-- Rule audit metadata (BU / squad / context tagging)
-- Export in CSV or JSON file format
 
 ---
 
