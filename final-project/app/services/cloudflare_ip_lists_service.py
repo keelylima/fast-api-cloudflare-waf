@@ -97,9 +97,10 @@ async def add_ip_to_list(account_id: str, list_id: str, data: IPItem):
 
     payload = [
         {
-            "ip": str(data.ip),
-            "comment": data.comment
+            "ip": str(item.ip),
+            "comment": item.comment
         }
+        for item in data
     ]
 
     async with httpx.AsyncClient() as client:
