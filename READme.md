@@ -135,14 +135,14 @@ GET /cloudflare/ip-lists/{account_id}/ip-lists
 
 Returns all IP Lists for a given Cloudflare account.
 Includes metadata such as:
-- id
-- name
-- description
-- kind
-- num_items
-- num_referencing_filters
-- created_on
-- modified_on
+- `id`
+- `name`
+- `description`
+- `kind`
+- `num_items`
+- `num_referencing_filters`
+- `created_on`
+- `modified_on`
 
 ---
 
@@ -160,8 +160,8 @@ Request Body
 }
 ```
 
-Notes
-Cloudflare Free plan allows only one IP list per account.
+Notes:
+> Cloudflare Free plan allows only one IP list per account.
 Attempting to create additional lists may return an error.
 The list is created at the account level, not zone level.
 
@@ -174,7 +174,7 @@ DELETE /cloudflare/ip-lists/{account_id}/ip-lists/{list_id}
 Deletes an existing IP List.
 
 Notes
-Deletion will fail if the list is referenced by active rules.
+> Deletion will fail if the list is referenced by active rules.
 Ensure the list is not in use before deletion.
 
 ---
@@ -185,10 +185,10 @@ GET /cloudflare/ip-lists/{account_id}/ip-lists/{list_id}/items
 ```
 Returns all IP entries within a specific IP List.
 Each item includes:
-- id
-- ip
-- comment
-- created_on
+- `id`
+- `ip`
+- `comment`
+- `created_on`
 
 ---
 
@@ -219,7 +219,7 @@ Cloudflare processes additions asynchronously and returns:
 }
 ```
 
-The operation_id can be used to track processing status via the Cloudflare API.
+The `operation_id` can be used to track processing status via the Cloudflare API.
 
 ---
 
