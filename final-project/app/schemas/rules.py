@@ -68,6 +68,9 @@ class ExportedRule(BaseModel):
     expression: str | None
     enabled: bool
 
+
+
+### Rules IPs
 class IPListResponse(BaseModel):
     id: str
     name: str
@@ -75,4 +78,8 @@ class IPListResponse(BaseModel):
     description: str | None = None
     num_items: int
     created_on: datetime
+
+class CreateIPListRequest(BaseModel):
+    name: str = Field(..., min_length=4, max_length=70, description="Need a name")
+    description: str = Field(..., description="Need a description.")
 
