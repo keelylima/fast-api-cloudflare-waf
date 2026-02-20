@@ -192,7 +192,7 @@ Each item includes:
 
 ---
 
-📌 14. Add IP(s) to IP List
+### 📌 14. Add IP(s) to IP List
 ```
 POST /cloudflare/ip-lists/{account_id}/ip-lists/{list_id}/items
 ```
