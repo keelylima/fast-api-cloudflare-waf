@@ -86,3 +86,19 @@ class CreateIPListRequest(BaseModel):
 class IPItem(BaseModel):
     ip: IPvAnyAddress
     comment: Optional[str] = None
+
+
+class IPListUsageItem(BaseModel):
+    zone_id: str
+    zone_name: str
+    rule_id: str | None = None
+    description: str | None = None
+    action: str | None = None
+    enabled: bool | None = None
+    expression: str | None = None
+
+class IPListUsageResponse(BaseModel):
+    list_id: str
+    list_name: str
+    references_found: int
+    usages: List[IPListUsageItem]

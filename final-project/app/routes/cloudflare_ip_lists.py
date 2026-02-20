@@ -1,10 +1,11 @@
 from fastapi import APIRouter
 from typing import List
-from app.services.cloudflare_ip_lists_service import list_ip_lists, list_ip_list_items, create_ip_list, delete_ip_list, add_ip_to_list
+from app.services.cloudflare_ip_lists_service import list_ip_lists, list_ip_list_items, create_ip_list, delete_ip_list, add_ip_to_list, find_ip_list_usage
 from app.schemas.rules import (
     IPListResponse,
     CreateIPListRequest,
-    IPItem
+    IPItem,
+    IPListUsageResponse
 )
 
 router = APIRouter(
@@ -39,3 +40,14 @@ async def add_ip_route(
     body: List[IPItem]
 ):
     return await add_ip_to_list(account_id, list_id, body)
+
+
+@router.get(
+    "/{account_id}/ip-lists/{list_id}/usage",
+    response_model=IPListUsageResponse
+)
+async def get_ip_list_usage(account_id: str, list_id: str):
+    """
+    Returns all zone-level WAF rules where the IP list is referenced.
+    """
+    return await find_ip_list_usage(account_id, list_id)

@@ -117,3 +117,81 @@ async def add_ip_to_list(account_id: str, list_id: str, data: IPItem):
         )
 
     return response.json().get("result")
+
+async def find_ip_list_usage(account_id: str, list_id: str):
+    headers = get_headers()
+
+    async with httpx.AsyncClient() as client:
+
+        # Buscar lista
+        list_url = f"{settings.CLOUDFLARE_BASE_URL}/accounts/{account_id}/rules/lists/{list_id}"
+        list_response = await client.get(list_url, headers=headers)
+
+        if list_response.status_code != 200:
+            raise HTTPException(
+                status_code=list_response.status_code,
+                detail=list_response.text
+            )
+
+        list_data = list_response.json()["result"]
+        list_name = list_data["name"]
+
+        # Otimização inteligente
+        if list_data.get("num_referencing_filters", 0) == 0:
+            return {
+                "list_id": list_id,
+                "list_name": list_name,
+                "references_found": 0,
+                "usages": []
+            }
+
+        # Buscar zones
+        zones_url = f"{settings.CLOUDFLARE_BASE_URL}/zones"
+        zones_response = await client.get(zones_url, headers=headers)
+
+        if zones_response.status_code != 200:
+            raise HTTPException(
+                status_code=zones_response.status_code,
+                detail=zones_response.text
+            )
+
+        zones = zones_response.json()["result"]
+        usage_results = []
+
+        # Iterar zones e olhar apenas a phase específica
+        for zone in zones:
+            zone_id = zone["id"]
+            zone_name = zone["name"]
+
+            ruleset_url = (
+                f"{settings.CLOUDFLARE_BASE_URL}"
+                f"/zones/{zone_id}/rulesets/phases/http_request_firewall_custom/entrypoint"
+            )
+
+            ruleset_response = await client.get(ruleset_url, headers=headers)
+
+            if ruleset_response.status_code != 200:
+                continue
+
+            ruleset = ruleset_response.json()["result"]
+
+            for rule in ruleset.get("rules", []):
+                expression = rule.get("expression", "")
+
+                if f"${list_name}" in expression:
+                    usage_results.append({
+                        "zone_id": zone_id,
+                        "zone_name": zone_name,
+                        "rule_id": rule.get("id"),
+                        "description": rule.get("description"),
+                        "action": rule.get("action"),
+                        "enabled": rule.get("enabled"),
+                        "expression": expression
+                    })
+
+        return {
+            "list_id": list_id,
+            "list_name": list_name,
+            "references_found": len(usage_results),
+            "usages": usage_results
+        }
