@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from typing import List
-from app.services.cloudflare_ip_lists_service import list_ip_lists, list_ip_list_items
+from app.services.cloudflare_ip_lists_service import list_ip_lists, list_ip_list_items, create_ip_list
 from app.schemas.rules import (
     IPListResponse,
     CreateIPListRequest
