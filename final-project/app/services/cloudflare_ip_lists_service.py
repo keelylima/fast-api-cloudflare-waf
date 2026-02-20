@@ -1,15 +1,25 @@
 import httpx
 from fastapi import HTTPException
 from app.core.config import settings
-from app.services.cloudflare_service import get_headers
 
+def get_headers():
+    if not settings.CLOUDFLARE_API_TOKEN:
+        raise HTTPException(
+            status_code=500,
+            detail="Cloudflare token not configured"
+        )
 
-async def list_ip_lists():
+    return {
+        "Authorization": f"Bearer {settings.CLOUDFLARE_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+async def list_ip_lists(account_id: str):
     headers = get_headers()
 
     async with httpx.AsyncClient() as client:
         response = await client.get(
-            f"{settings.CLOUDFLARE_BASE_URL}/accounts/{settings.CLOUDFLARE_ACCOUNT_ID}/rules/lists",
+            f"{settings.CLOUDFLARE_BASE_URL}/accounts/{account_id}/rules/lists",
             headers=headers
         )
 
@@ -20,3 +30,4 @@ async def list_ip_lists():
         )
 
     return response.json().get("result", [])
+

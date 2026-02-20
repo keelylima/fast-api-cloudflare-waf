@@ -11,6 +11,6 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[IPListResponse])
-def get_ip_lists():
-    return list_ip_lists()
+@router.get("/{account_id}/ip-lists")
+async def get_ip_lists(account_id: str):
+    return await list_ip_lists(account_id)
