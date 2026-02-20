@@ -1,5 +1,6 @@
 from pydantic import BaseModel, model_validator, Field
 from typing import Literal, Optional, List
+from datetime import datetime
 
 class CreateRulesetRequest(BaseModel):
     name: str
@@ -66,4 +67,12 @@ class ExportedRule(BaseModel):
     action: str
     expression: str | None
     enabled: bool
+
+class IPListResponse(BaseModel):
+    id: str
+    name: str
+    kind: str
+    description: str | None = None
+    num_items: int
+    created_on: datetime
 
