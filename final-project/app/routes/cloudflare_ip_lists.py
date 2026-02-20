@@ -1,9 +1,10 @@
 from fastapi import APIRouter
 from typing import List
-from app.services.cloudflare_ip_lists_service import list_ip_lists, list_ip_list_items, create_ip_list, delete_ip_list
+from app.services.cloudflare_ip_lists_service import list_ip_lists, list_ip_list_items, create_ip_list, delete_ip_list, add_ip_to_list
 from app.schemas.rules import (
     IPListResponse,
-    CreateIPListRequest
+    CreateIPListRequest,
+    IPItem
 )
 
 router = APIRouter(
@@ -30,3 +31,11 @@ async def create_ip_list_route(
 @router.delete("/{account_id}/ip-lists/{list_id}")
 async def delete_ip_list_route(account_id: str, list_id: str):
     return await delete_ip_list(account_id, list_id)
+
+@router.post("/{account_id}/ip-lists/{list_id}/items")
+async def add_ip_route(
+    account_id: str,
+    list_id: str,
+    body: List[IPItem]
+):
+    return await add_ip_to_list(account_id, list_id, body)

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, model_validator, Field
+from pydantic import BaseModel, model_validator, Field, IPvAnyAddress
 from typing import Literal, Optional, List
 from datetime import datetime
 
@@ -83,3 +83,6 @@ class CreateIPListRequest(BaseModel):
     name: str = Field(..., min_length=4, max_length=70, description="Need a name")
     description: str = Field(..., description="Need a description.")
 
+class IPItem(BaseModel):
+    ip: IPvAnyAddress
+    comment: Optional[str] = None

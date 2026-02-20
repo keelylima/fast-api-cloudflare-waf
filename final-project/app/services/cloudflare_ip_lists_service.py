@@ -1,7 +1,7 @@
 import httpx
 from fastapi import HTTPException
 from app.core.config import settings
-from app.schemas.rules import CreateIPListRequest
+from app.schemas.rules import CreateIPListRequest, IPItem
 
 def get_headers():
     if not settings.CLOUDFLARE_API_TOKEN:
@@ -90,3 +90,29 @@ async def delete_ip_list(account_id: str, list_id: str):
         )
 
     return {"message": "IP list deleted successfully"}
+
+
+async def add_ip_to_list(account_id: str, list_id: str, data: IPItem):
+    headers = get_headers()
+
+    payload = [
+        {
+            "ip": str(data.ip),
+            "comment": data.comment
+        }
+    ]
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{settings.CLOUDFLARE_BASE_URL}/accounts/{account_id}/rules/lists/{list_id}/items",
+            headers=headers,
+            json=payload
+        )
+
+    if response.status_code not in (200, 201):
+        raise HTTPException(
+            status_code=response.status_code,
+            detail=response.json()
+        )
+
+    return response.json().get("result")
