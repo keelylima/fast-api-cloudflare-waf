@@ -105,15 +105,15 @@ Only one position field allowed per request.
 GET /cloudflare/rules/export/{zone_id}?kind=zone
 ```
 Returns a structured inventory of rules including:
-- zone_name
-- zone_id
-- ruleset_id
-- rule_id
-- description
-- action
-- expression
-- enabled
-- index (execution order inside ruleset)
+- `zone_name`
+- `zone_id`
+- `ruleset_id`
+- `rule_id`
+- `description`
+- `action`
+- `expression`
+- `enabled`
+- `index` (execution order inside ruleset)
 
 Query parameter:
 
