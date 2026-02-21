@@ -1,6 +1,7 @@
-from pydantic import BaseModel, model_validator, Field, IPvAnyAddress
+from pydantic import BaseModel, model_validator, Field, IPvAnyAddress, field_validator
 from typing import Literal, Optional, List
 from datetime import datetime
+import re
 
 class CreateRulesetRequest(BaseModel):
     name: str
@@ -37,6 +38,26 @@ class CreateRuleRequest(BaseModel):
                 raise ValueError("action_parameters must not be provided when action is 'block'")
 
         return values
+    
+    @field_validator("description")
+    def validate_description(cls, value: str) -> str:
+        parts = value.split("_")
+
+        if not re.match(r"^(block|skip|log)_", value):
+            raise ValueError("Rule must start with block_, skip_, or log_")
+
+        if "host" not in value:
+            raise ValueError("Rule name must contain 'host'")
+
+        if not re.match(r"^[a-z0-9\_]+$", value):
+            raise ValueError(
+                "Rule name must contain only lowercase letters, numbers and underscores."
+            )
+
+        if len(parts) < 2 or parts[1] != "host":
+            raise ValueError("Rule name must follow format: <action>-host-<context>")
+
+        return value
     
 class RulePosition(BaseModel):
     before: Optional[str] = None
