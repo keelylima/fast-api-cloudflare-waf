@@ -121,9 +121,9 @@ async def add_ip_to_list(account_id: str, list_id: str, data: IPItem):
 async def find_ip_list_usage(account_id: str, list_id: str):
     headers = get_headers()
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=10.0) as client:
 
-        # Buscar lista
+        # Buscar dados da lista
         list_url = f"{settings.CLOUDFLARE_BASE_URL}/accounts/{account_id}/rules/lists/{list_id}"
         list_response = await client.get(list_url, headers=headers)
 
@@ -135,15 +135,6 @@ async def find_ip_list_usage(account_id: str, list_id: str):
 
         list_data = list_response.json()["result"]
         list_name = list_data["name"]
-
-        # Otimização inteligente
-        if list_data.get("num_referencing_filters", 0) == 0:
-            return {
-                "list_id": list_id,
-                "list_name": list_name,
-                "references_found": 0,
-                "usages": []
-            }
 
         # Buscar zones
         zones_url = f"{settings.CLOUDFLARE_BASE_URL}/zones"
@@ -158,7 +149,7 @@ async def find_ip_list_usage(account_id: str, list_id: str):
         zones = zones_response.json()["result"]
         usage_results = []
 
-        # Iterar zones e olhar apenas a phase específica
+        # Para cada zone
         for zone in zones:
             zone_id = zone["id"]
             zone_name = zone["name"]
@@ -174,24 +165,31 @@ async def find_ip_list_usage(account_id: str, list_id: str):
                 continue
 
             ruleset = ruleset_response.json()["result"]
+            rules = ruleset.get("rules", [])
 
-            for rule in ruleset.get("rules", []):
+            for rule in rules:
                 expression = rule.get("expression", "")
 
                 if f"${list_name}" in expression:
+                    print('ESSA É A RULE DENTRO DO IF', rule)
+                    print('TEM OU N?', rule["description"])
                     usage_results.append({
-                        "zone_id": zone_id,
                         "zone_name": zone_name,
-                        "rule_id": rule.get("id"),
-                        "description": rule.get("description"),
-                        "action": rule.get("action"),
-                        "enabled": rule.get("enabled"),
-                        "expression": expression
+                        "zone_id": zone_id,
+                        "ruleset_id": ruleset["id"],
+                        "rule_id": rule["id"],
+                        "rule_description": rule["description"],
+                        "expression": expression,
+                        "enabled": rule["enabled"]
                     })
 
+                    print('ué', usage_results)
+
+        print('usage fora', usage_results)
         return {
             "list_id": list_id,
             "list_name": list_name,
             "references_found": len(usage_results),
             "usages": usage_results
         }
+

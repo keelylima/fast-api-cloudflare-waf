@@ -47,7 +47,5 @@ async def add_ip_route(
     response_model=IPListUsageResponse
 )
 async def get_ip_list_usage(account_id: str, list_id: str):
-    """
-    Returns all zone-level WAF rules where the IP list is referenced.
-    """
+    # Returns all zone-level WAF rules where the IP list is referenced.
     return await find_ip_list_usage(account_id, list_id)
