@@ -171,8 +171,6 @@ async def find_ip_list_usage(account_id: str, list_id: str):
                 expression = rule.get("expression", "")
 
                 if f"${list_name}" in expression:
-                    print('ESSA É A RULE DENTRO DO IF', rule)
-                    print('TEM OU N?', rule["description"])
                     usage_results.append({
                         "zone_name": zone_name,
                         "zone_id": zone_id,
@@ -180,12 +178,10 @@ async def find_ip_list_usage(account_id: str, list_id: str):
                         "rule_id": rule["id"],
                         "rule_description": rule["description"],
                         "expression": expression,
+                        "action": rule["action"],
                         "enabled": rule["enabled"]
                     })
 
-                    print('ué', usage_results)
-
-        print('usage fora', usage_results)
         return {
             "list_id": list_id,
             "list_name": list_name,

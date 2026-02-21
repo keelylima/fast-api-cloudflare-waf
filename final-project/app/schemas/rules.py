@@ -91,8 +91,9 @@ class IPItem(BaseModel):
 class IPListUsageItem(BaseModel):
     zone_id: str
     zone_name: str
+    ruleset_id: str | None = None
     rule_id: str | None = None
-    description: str | None = None
+    rule_description: str | None = None
     action: str | None = None
     enabled: bool | None = None
     expression: str | None = None
