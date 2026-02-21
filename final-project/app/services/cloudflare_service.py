@@ -1,7 +1,8 @@
 import httpx
 from fastapi import HTTPException
 from app.core.config import settings
-from app.schemas.rules import CreateRulesetRequest, CreateRuleRequest, ExportedRule
+from app.schemas.rules import CreateRulesetRequest, CreateRuleRequest, ExportedRule, RulePosition
+from typing import Literal
 
 
 def get_headers():
