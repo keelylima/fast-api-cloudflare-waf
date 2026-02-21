@@ -189,3 +189,24 @@ async def find_ip_list_usage(account_id: str, list_id: str):
             "usages": usage_results
         }
 
+async def delete_ip_from_list(account_id: str, list_id: str, item_id: str):
+    headers = get_headers()
+
+    async with httpx.AsyncClient() as client:
+        response = await client.delete(
+            f"{settings.CLOUDFLARE_BASE_URL}/accounts/{account_id}/rules/lists/{list_id}/items/{item_id}",
+            headers=headers
+        )
+
+    if response.status_code not in (200, 204):
+        raise HTTPException(
+            status_code=response.status_code,
+            detail=response.text
+        )
+
+    return {
+        "message": "IP item removed successfully",
+        "item_id": item_id
+    }
+
+
