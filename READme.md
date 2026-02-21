@@ -1,8 +1,5 @@
 # 🔐 Cloudflare WAF Governance API
 
-> ⚠️ Work in Progress  
-> This project is under active development. Features and structure may evolve.
-
 Internal tool designed to manage, export, and organize Cloudflare WAF rules in a structured and scalable way.
 
 The goal is to provide governance, visibility, and operational control over custom and managed rulesets across Cloudflare zones.
@@ -222,6 +219,27 @@ Cloudflare processes additions asynchronously and returns:
 The `operation_id` can be used to track processing status via the Cloudflare API.
 
 ---
+### 📌 15. Get IP List Usage
+```
+GET /cloudflare/ip-lists/{account_id}/ip-lists/{list_id}/usage
+```
+Returns reference metadata describing where the IP List is currently in use.
+
+Useful for:
+
+- `Governance validation`
+- `Safe deletion checks`
+- `Dependency analysis`
+
+---
+
+### 📌 16. Delete IP List Item
+```
+DELETE /cloudflare/ip-lists/{account_id}/ip-lists/{list_id}/items/{item_id}
+```
+Removes a specific IP entry from the list.
+
+---
 
 ## 🧠 Architectural Design
 
@@ -260,12 +278,17 @@ Recommended permissions:
 
 ---
 
-## 📈 Future Improvements (Roadmap)
+## ⚠️ Cloudflare Free Plan Limitations
 
-- Rule naming validation (regex enforcement)
-- Governance reports (block vs skip distribution)
-- Diff between environments (QA vs PROD)
-- Pagination support for large zones
+This API was developed and validated using a **Cloudflare Free Plan** account.
+
+Due to plan restrictions:
+
+- Managed rulesets (including OWASP) cannot be modified
+- No exception routes exist for managed / OWASP rules
+- Only one IP List can be created per account
+
+These limitations are imposed by Cloudflare, not by the API design.
 
 ---
 
